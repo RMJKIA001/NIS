@@ -38,44 +38,53 @@ public class Server
 		dos.writeObject("You are connected");
 			
 		ObjectInputStream dis = new ObjectInputStream(s.getInputStream()); //input stream to recieve message from client
-		SecretKey k = (SecretKey) dis.readObject(); //recieves the key
-                System.out.println("Encoded Key: "+ k);
-                System.out.println();
-                SecretKey decKey = rsa.decryptSharedKey(k.getEncoded());
-                System.out.println("Decoded Key: "+decKey);
-                System.out.println();
-		byte[] iv = (byte[])dis.readObject(); //receives the iv
-                
-		byte[] received = (byte[])dis.readObject(); //recieves the encypted hash + message
-                System.out.println("Received: "+Base64.getEncoder().encodeToString(received));
-                System.out.println();
-		//String decryptCompString = decryptString(received,decKey,iv);
-                byte[] decryptCompByte = decryptByte(received,decKey,iv);
-                //Base64.getEncoder().encodeToString
-                System.out.println("Decryped compressed concatenation: "+Base64.getEncoder().encodeToString(decryptCompByte));
-                System.out.println();
-                String dcomp = decompress(decryptCompByte);
-                System.out.println("Decrypted decompressed concatenation: "+dcomp);
-                System.out.println();
-                String hash = dcomp.substring(0,dcomp.indexOf("|||"));//dcomp.split("||")[0];
-                System.out.println("Encrypted hash: "+hash);
-                System.out.println();
-                hash = rsa.decryptHas(Base64.getDecoder().decode(hash));
-                //hash = rsa.decryptHas(hash.getBytes("UTF-8"));
-                System.out.println("Decrypted hash: "+hash);
-                String message = dcomp.substring(dcomp.indexOf("|||")+3);//dcomp.split("||")[1];
-                System.out.println(message);
-                String myHash = Hash.hash(message);
-                if(hash.equals(myHash))
-                {
-                   System.out.println("Authenticated");
-                }
-                //System.out.println(decrypt(message.getBytes(), decKey, iv)); //decrypts and prints message
+		System.out.println();
+
+        //Recieve from client
+        SecretKey k = (SecretKey) dis.readObject(); //recieves the key
+        byte[] iv = (byte[])dis.readObject(); //receives the iv
+        byte[] received = (byte[])dis.readObject(); //recieves the encypted hash + message
+        
+        System.out.println("Received: "+Base64.getEncoder().encodeToString(received));
+        System.out.println();
+
+        //decrypt shared key
+        System.out.println("Encoded Key: "+ k);
+        SecretKey decKey = rsa.decryptSharedKey(k.getEncoded());
+        System.out.println("Decoded Key: "+decKey);
+        System.out.println();
+        //decrypt using shared key        
+        
+		byte[] decryptCompByte = decryptByte(received,decKey,iv);
+        System.out.println("Decrypted compressed concatenation: "+Base64.getEncoder().encodeToString(decryptCompByte));
+        System.out.println();
+        
+        //decompress
+        String dcomp = decompress(decryptCompByte);
+    
+        
+
+        String hash = dcomp.substring(0,dcomp.indexOf("|||"));
+        String message = dcomp.substring(dcomp.indexOf("|||")+3);
+
+        System.out.println("Encrypted hash: "+hash);
+        System.out.println();
+        hash = rsa.decryptHas(Base64.getDecoder().decode(hash));
+        
+        System.out.println("Decrypted hash: "+hash);
+        System.out.println();
+        String myHash = Hash.hash(message);
+        if(hash.equals(myHash))
+        {
+           System.out.println("---Message authenticated---");
+           System.out.println(message);
+        }
+
 			
 
 	}
 	
-        public static byte[] decryptByte (byte[] cipherText, SecretKey key,byte[] IV) throws Exception
+    public static byte[] decryptByte (byte[] cipherText, SecretKey key,byte[] IV) throws Exception
     {
         //Create cipher for AES with PKCS Padding
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
@@ -89,15 +98,14 @@ public class Server
         byte[] decryptedText = cipher.doFinal(cipherText);
         return decryptedText;
     }
-    public static String decompress(byte[] str) throws Exception {
+    public static String decompress(byte[] str) throws Exception 
+    {
 
         if (str == null || str.length == 0) {
 
             return null;
 
         }
-
-        //System.out.println("Input String length : " + str.length());
 
         GZIPInputStream gis = new GZIPInputStream(new ByteArrayInputStream(str));
 
@@ -113,11 +121,9 @@ public class Server
 
         }
 
-        //System.out.println("Output String lenght : " + outStr.length());
-
         return outStr;
 
-}
+    }
 
  
 

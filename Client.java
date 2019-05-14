@@ -34,39 +34,51 @@ public class Client
             ObjectOutputStream dos = new ObjectOutputStream(s.getOutputStream());
             System.out.println(dis.readObject()); //reads welcome message
 
+    
+            System.out.print("Enter message to send: ");
+            Scanner sc = new Scanner(System.in);
+            String msg = sc.nextLine();
+            //Hash the message
+            System.out.println("---Signing message---");
+            String hash = Hash.hash(msg);
+            System.out.println("Hash: "+hash);
+            System.out.println();
+            //Encrypt the hash
+            String encHash = Base64.getEncoder().encodeToString(rsa.encryptHash(hash));
+            System.out.println("Encrypted Hash: "+encHash);
+            System.out.println();
+            
+            //compress signature and message
+            byte[] toSend = compress(encHash+"|||"+msg);
+            System.out.println("Compressed concatenation: "+Base64.getEncoder().encodeToString(toSend));
+            System.out.println();
+
+            //Generate shared key
             //session key generation with AES
             KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
             keyGenerator.init(128);
             SecretKey key = keyGenerator.generateKey();
             System.out.println("Decoded Key: "+key);
-            //encrypt the key
+            //encrypt the shared key
             SecretKey encKey = new SecretKeySpec(rsa.encryptSharedKey(key), "AES");
             System.out.println("Encoded Key: "+ encKey);
-            dos.writeObject(encKey); //send key to server
+            System.out.println();
+            
        	
 
             // Generate initialization vector.
             byte[] IV = new byte[16];
             SecureRandom random = new SecureRandom();
             random.nextBytes(IV);
-            dos.writeObject(IV); //send initialization to server (think it also needs to be encrypted?) 
 
-            System.out.print("Enter message to send: ");
-            Scanner sc = new Scanner(System.in);
-            String msg = sc.nextLine();
-            String hash = Hash.hash(msg);
-            System.out.println("Hash: "+hash);
-            System.out.println();
-            String encHash = Base64.getEncoder().encodeToString(rsa.encryptHash(hash));
-            System.out.println("Encrpted Hash: "+encHash);
-            System.out.println();
-            byte[] toSend = compress(encHash+"|||"+msg);
-            System.out.println("Compressed concatenation: "+Base64.getEncoder().encodeToString(toSend));
-            System.out.println();
-            
+
+            //Encrypt the compression
             byte[] encMsg = encrypt(toSend, key, IV); //call to encrypt with the key an iv
-            dos.writeObject(encMsg); //sends the encryption 
             
+            //transmit the encrypted message and key
+            dos.writeObject(encKey); //send key to server
+            dos.writeObject(IV); //send initialization to server (think it also needs to be encrypted?)
+            dos.writeObject(encMsg); //sends the encryption 
             
             System.out.println("Encrypted Text : " + Base64.getEncoder().encodeToString(encMsg));
             System.out.println();

@@ -2,6 +2,8 @@
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 
 
@@ -10,8 +12,8 @@ public class Hash
  
     public static String hash(String input) throws NoSuchAlgorithmException 
     {
-
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        Security.addProvider(new BouncyCastleProvider());
+        MessageDigest md = MessageDigest.getInstance("SHA3-256");
 
  
 

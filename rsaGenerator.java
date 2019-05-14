@@ -1,6 +1,3 @@
-//package publicKeyEncryption;
-
-
 import java.io.*;
 import java.security.*;
 import java.security.spec.*;
@@ -37,7 +34,8 @@ public class rsaGenerator {
 		Security.addProvider(new BouncyCastleProvider());
 	}
 	
-	/*
+	/**
+	 * @param from 
 	 * Generate a public key and a private key using the RSA algorith
 	 * Store the keys into a file.
 	 */
@@ -182,35 +180,48 @@ public class rsaGenerator {
 		return aesKey;
 		
 	}
-	//A method to encrypt the hash
+	/**
+	 *@param hash a string value of the hash
+	 *A method to encrypt a given hash using the private key of the person doing the encryption
+	**/
 	public byte[] encryptHash(String hash) throws Exception{
 		keyCipher = null;
 		byte[] encHash = null;
-		//String hello = null;
+
 		try 
 		{
+			//read the private key file
 			PrivateKey pvKey = readPrivateKeyFromFile("client/private.key");		
+			//add the padding to the cipher
 			keyCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			//initiate cipher in encryption mode to be encrypted with the private key
 			keyCipher.init(Cipher.ENCRYPT_MODE, pvKey);
-			
+			//Use the Base64 decoder because the encryption would be a sequence of bytes without encoding but we need the encoding for decoding
 			encHash = keyCipher.doFinal(Base64.getDecoder().decode(hash));
-                        //hello = Base64.getEncoder()
+                     
 		} catch (Exception e ) {
 			e.printStackTrace();
 		}
 		return encHash; //the encrypted hash
 	}
-	//A method to decrypt the shared key
+	/**
+	 *@param encryptedHash a byte array of the encryptedHash 
+	 *A method to decrypt the hash with client's public key
+	*/
 	public String decryptHas(byte[] encryptedHash) throws Exception{
 		String temp = null;
 		keyDecipher = null;
 		
 		try {
+			//reas the public key file
 			PublicKey puKey = readPublicKeyFromFile("client/public.key");
+			//add the padding to the cipher
 			keyDecipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+			//inititiate the cipher in decryption mode with the public key
 			keyDecipher.init(Cipher.DECRYPT_MODE, puKey);
-                        temp =  Base64.getEncoder().encodeToString(keyDecipher.doFinal(encryptedHash));
-			//hash = new String(temp);
+			//Encryption was done with Base64 so the decryption is done 
+            temp =  Base64.getEncoder().encodeToString(keyDecipher.doFinal(encryptedHash));
+			
 			
 		} catch(IOException | InvalidKeyException | NoSuchAlgorithmException | BadPaddingException | IllegalBlockSizeException | NoSuchPaddingException e) {
                     e.printStackTrace();
@@ -220,31 +231,7 @@ public class rsaGenerator {
 		
 	}
 	
-	public static void main(String[] args) {
-		
-		
-		
-		rsaGenerator RSA = new rsaGenerator();
-		
-		
-		System.out.println("Save keys to file");
-		
-		try {
-		//RSA.generateRSAKey();
-		
-		
-		System.out.println("Encryption algorithm");
-		//SecretKey thabo_AES_key = RSA.generateSharedKey("Test");
-		//byte[] keyJudas = RSA.encryptSharedKey(thabo_AES_key);
-		//System.out.println("The encrypeted shared key: "+ keyJudas);
-		
-		//System.out.println("The decrypted shared key: "+ RSA.decryptSharedKey(keyJudas));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		System.out.println("shit is gesund very sehr gesund");
-	}
+	
 	
 
 }
