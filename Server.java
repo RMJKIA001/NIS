@@ -40,7 +40,7 @@ public class Server
 		ObjectInputStream dis = new ObjectInputStream(s.getInputStream()); //input stream to recieve message from client
 		System.out.println();
 
-        //Recieve from client
+        //Recieve key and message from client
         SecretKey k = (SecretKey) dis.readObject(); //recieves the key
         byte[] iv = (byte[])dis.readObject(); //receives the iv
         byte[] received = (byte[])dis.readObject(); //recieves the encypted hash + message
@@ -48,13 +48,13 @@ public class Server
         System.out.println("Received: "+Base64.getEncoder().encodeToString(received));
         System.out.println();
 
-        //decrypt shared key
+        //decrypt the shared key using RSA
         System.out.println("Encoded Key: "+ k);
         SecretKey decKey = rsa.decryptSharedKey(k.getEncoded());
         System.out.println("Decoded Key: "+decKey);
         System.out.println();
+
         //decrypt using shared key        
-        
 		byte[] decryptCompByte = decryptByte(received,decKey,iv);
         System.out.println("Decrypted compressed concatenation: "+Base64.getEncoder().encodeToString(decryptCompByte));
         System.out.println();
@@ -63,27 +63,35 @@ public class Server
         String dcomp = decompress(decryptCompByte);
     
         
-
+        //Separating the concatination
         String hash = dcomp.substring(0,dcomp.indexOf("|||"));
         String message = dcomp.substring(dcomp.indexOf("|||")+3);
-
         System.out.println("Encrypted hash: "+hash);
         System.out.println();
-        hash = rsa.decryptHas(Base64.getDecoder().decode(hash));
         
+        //decrypt hash using rsa
+        hash = rsa.decryptHas(Base64.getDecoder().decode(hash));
         System.out.println("Decrypted hash: "+hash);
         System.out.println();
+
+        //create own hash to compare for authentication
         String myHash = Hash.hash(message);
         if(hash.equals(myHash))
         {
            System.out.println("---Message authenticated---");
            System.out.println(message);
         }
-
+        System.out.println("Message received. Goodbye.");
+        s.close();
+        ss.close();
+        dos.close();
+        dis.close();
 			
 
 	}
-	
+	/*
+    *Decryption for AES (Used for the message)
+    */
     public static byte[] decryptByte (byte[] cipherText, SecretKey key,byte[] IV) throws Exception
     {
         //Create cipher for AES with PKCS Padding

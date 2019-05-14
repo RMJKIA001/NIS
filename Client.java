@@ -38,11 +38,13 @@ public class Client
             System.out.print("Enter message to send: ");
             Scanner sc = new Scanner(System.in);
             String msg = sc.nextLine();
+
             //Hash the message
             System.out.println("---Signing message---");
             String hash = Hash.hash(msg);
             System.out.println("Hash: "+hash);
             System.out.println();
+
             //Encrypt the hash
             String encHash = Base64.getEncoder().encodeToString(rsa.encryptHash(hash));
             System.out.println("Encrypted Hash: "+encHash);
@@ -74,17 +76,24 @@ public class Client
 
             //Encrypt the compression
             byte[] encMsg = encrypt(toSend, key, IV); //call to encrypt with the key an iv
-            
+            System.out.println("Encrypted Text : " + Base64.getEncoder().encodeToString(encMsg));
+            System.out.println();
+
             //transmit the encrypted message and key
             dos.writeObject(encKey); //send key to server
             dos.writeObject(IV); //send initialization to server (think it also needs to be encrypted?)
             dos.writeObject(encMsg); //sends the encryption 
             
-            System.out.println("Encrypted Text : " + Base64.getEncoder().encodeToString(encMsg));
-            System.out.println();
-            System.out.println("Message sent. Goodbye");
+            s.close();
+            sc.close();
+            dos.close();
+            dis.close();
+            
+            System.out.println("Message sent. Goodbye.");
 	}
-
+    /*
+    *Encryption using AES
+    */
     public static byte[] encrypt (byte[] plaintext,SecretKey key,byte[] IV ) throws Exception
     {
         //Create cipher for AES with PKCS Padding
