@@ -80,8 +80,14 @@ public class Server
         {
            System.out.println("---Message authenticated---");
            System.out.println(message);
+           System.out.println();
+           System.out.println("Message received. Goodbye.");
         }
-        System.out.println("Message received. Goodbye.");
+        else
+        {
+            System.out.println("---Message NOT authenticated---\nGoodbye.");
+        }
+        
         s.close();
         ss.close();
         dos.close();

@@ -25,16 +25,16 @@ public class Client
             //generate pub/prv keys 
             rsaGenerator rsa = new rsaGenerator();
             rsa.generateRSAKey("client");
+            try
+            {
+                //connect to local host on port 3000
+                Socket s = new Socket("127.0.0.1", 3000);
+                //input stream to recieve messages
+                ObjectInputStream dis = new ObjectInputStream(s.getInputStream());
+                //output stream to send messages
+                ObjectOutputStream dos = new ObjectOutputStream(s.getOutputStream());
+                System.out.println(dis.readObject()); //reads welcome message
 
-            //connect to local host on port 3000
-            Socket s = new Socket("127.0.0.1", 3000);
-            //input stream to recieve messages
-            ObjectInputStream dis = new ObjectInputStream(s.getInputStream());
-            //output stream to send messages
-            ObjectOutputStream dos = new ObjectOutputStream(s.getOutputStream());
-            System.out.println(dis.readObject()); //reads welcome message
-
-    
             System.out.print("Enter message to send: ");
             Scanner sc = new Scanner(System.in);
             String msg = sc.nextLine();
@@ -90,6 +90,11 @@ public class Client
             dis.close();
             
             System.out.println("Message sent. Goodbye.");
+            }catch(Exception e)
+            {
+                System.out.println("Server not running.");
+            }
+
 	}
     /*
     *Encryption using AES
