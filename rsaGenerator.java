@@ -193,7 +193,7 @@ public class rsaGenerator {
 			keyCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 			keyCipher.init(Cipher.ENCRYPT_MODE, pvKey);
 			
-			encHash = keyCipher.doFinal(hash.getBytes());
+			encHash = keyCipher.doFinal(Base64.getDecoder().decode(hash));
                         //hello = Base64.getEncoder()
 		} catch (Exception e ) {
 			e.printStackTrace();
